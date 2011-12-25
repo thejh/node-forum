@@ -2,6 +2,8 @@ var views = require('./views')
   , vacuum = require('vacuum')
   , marked = require('marked')
   , forum = require('./')
+  , parseURL = require('url').parse
+  , formatURL = require('url').format
 
 var PAGE_SIZE = 20
 
@@ -153,11 +155,12 @@ exports.withthread = function WITHTHREAD(template, functions, context, chunk, do
   var needed = 2
   var goOn = renderContent.bind(null, template, functions, childContext, chunk, done)
   
-  views.getThreadPosts(context.thread, PAGE_SIZE, context.threadSkip || 0, function(err, data) {
+  views.getThreadPosts(context.thread, PAGE_SIZE, PAGE_SIZE * ((context.page-1) || 0), function(err, data) {
     if (err) return done(err)
     thread.posts = data.rows
     thread.length = data.total_rows
     thread.pages = Math.ceil(data.total_rows / PAGE_SIZE)
+    childContext.maxpage = thread.pages
     if (!--needed) goOn()
   })
   
@@ -174,4 +177,33 @@ exports.static = function STATIC(template, functions, context, chunk, done) {
   if (!file) throw new Error('falsy "file"')
   chunk('/static/'+file+'/'+forum.ramstatic.unique)
   done()
+}
+
+exports.pagenav = function PAGENAV(template, functions, context, chunk, done) {
+  var page = +context.page
+  var maxpage = +context.maxpage
+  var urlpos = context.pageURLPos
+  if (!page) throw new Error('invalid page')
+  if (!maxpage) throw new Error('invalid maxpage')
+  if (!urlpos) throw new Error('invalid urlpos')
+  var leftURL = addToURLPart(-1)
+  var rightURL = addToURLPart(1)
+  var data = ''
+  if (page > 1) {
+    data += '<a href="'+leftURL+'"><img src="/static/arrow-left.png/'+forum.ramstatic.unique+'"></a> '
+  }
+  data += 'page '+page+' of '+maxpage
+  if (page < maxpage) {
+    data += ' <a href="'+rightURL+'"><img src="/static/arrow-right.png/'+forum.ramstatic.unique+'"></a>'
+  }
+  chunk(data)
+  return done()
+  
+  function addToURLPart(change) {
+    url = parseURL(context.request.url)
+    var path = url.pathname.split('/')
+    path[urlpos] = +path[urlpos] + change
+    url.pathname = path.join('/')
+    return formatURL(url)
+  }
 }

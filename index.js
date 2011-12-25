@@ -6,6 +6,7 @@ var config = require('./config')
   , hat = require('hat')
   , querystring = require('querystring')
   , user = require('./user')
+  , parseURL = require('url').parse
 
 var HAT_TOKEN = /^[a-f0-9]{32}$/
 if (!HAT_TOKEN.test(hat())) throw new Error('weird')
@@ -21,7 +22,7 @@ var db = exports.db = new Relax(config.database)
 var httpServer = http.createServer(requestHandler)
 function requestHandler(req, res) {
   if (config.debug) console.log((req.username ? req.username : '<anonymous>')+': '+req.method+' '+req.url)
-  var urlparts = req.url.split('/').filter(function(str) {
+  var urlparts = parseURL(req.url).pathname.split('/').filter(function(str) {
     return str.length > 0
   })
   if (urlparts[0] === 'static' && (req.method === 'GET' || req.method === 'HEAD')) {
@@ -74,7 +75,12 @@ function requestHandler(req, res) {
     return
   }
   if (urlparts[0] === 'thread') {
-    return renderTemplate('thread', {thread: urlparts[1]}, res)
+    var threadPage = +urlparts[2]
+    if (!threadPage) {
+      res.writeHead(400, 'no or non-numeric page', { 'Content-Type': 'text/plain' })
+      return res.end('missing or non-numeric page')
+    }
+    return renderTemplate('thread', {thread: urlparts[1], page: threadPage, request: req, pageURLPos: 3}, res)
   }
   res.writeHead(404, 'invalid first path segment or method ☹',
   { 'X-Too-Stupid-To-Type': 'You!'
