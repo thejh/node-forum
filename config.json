@@ -7,4 +7,5 @@
 , "server":
   { "port": 9876
   }
+, "debug": true
 }

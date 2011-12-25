@@ -23,6 +23,7 @@ function requestHandler(req, res) {
   if (authedAs) {
     req.username = user.checkSignedLogin(authedAs)
   }
+  if (config.debug) console.log((req.username ? req.username : '<anonymous>')+': '+req.method+' '+req.url)
   var urlparts = req.url.split('/').filter(function(str) {
     return str.length > 0
   })
