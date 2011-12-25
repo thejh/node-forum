@@ -19,6 +19,10 @@ var db = exports.db = new Relax(config.database)
 
 var httpServer = http.createServer(requestHandler)
 function requestHandler(req, res) {
+  var authedAs = getCookie(req, 'Authed-As')
+  if (authedAs) {
+    req.username = user.checkSignedLogin(authedAs)
+  }
   var urlparts = req.url.split('/').filter(function(str) {
     return str.length > 0
   })
@@ -106,12 +110,19 @@ function bufferPost(req, res, checkToken) {
 }
 
 function getToken(req) {
+  var value = getCookie(req, 'FormToken')
+  if (!value) return
+  if (!HAT_TOKEN.test(value)) return
+  return value
+}
+
+function getCookie(req, name) {
   if (typeof req.headers.cookie !== 'string') return false
   var retval
   req.headers.cookie.split(';').forEach(function(cookieStr) {
     cookieStr = cookieStr.trim().split('=')
-    if (cookieStr[0] === 'FormToken' && HAT_TOKEN.test(cookieStr[1])) {
-      retval = cookieStr[1]
+    if (cookieStr[0] === name) {
+      retval = decodeURIComponent(cookieStr[1])
     }
   })
   return retval

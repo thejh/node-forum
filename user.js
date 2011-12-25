@@ -1,5 +1,6 @@
 exports.createUser = createUser
 exports.authUser = authUser
+exports.checkSignedLogin = checkSignedLogin
 
 var forum = require('./')
   , pwhash = require('password-hash')
@@ -46,5 +47,14 @@ function unsign(str) {
   str = str.slice(1).join(':')
   var algo = crypto.createHmac('sha512', config.hmacSecret)
   algo.update(str)
-  return (algo.digest('hex') === signature) ? str : void 0
+  return (algo.digest('hex') === signature) ? str : null
+}
+
+function checkSignedLogin(str) {
+  str = unsign(str)
+  if (str == null) return null
+  str = str.split(':')
+  if (str[0] !== 'validloginas') return null
+  str = str.slice(1).join(':')
+  return str
 }
