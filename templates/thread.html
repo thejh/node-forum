@@ -1,0 +1,18 @@
+{#document title="Thread"}
+  {#withthread}
+    {#foreach list="thread.posts" element="post"}
+      <div class="post">
+        <div class="postmeta">
+          <!-- no need to sanitize, usernames aren't dangerous -->
+          By {var name="post.value.owner"}
+          <br>
+          {var name="post.value.creation"}
+        </div>
+        <div class="posttext">
+          <!-- FIXME INJECTION FIXME -->
+          {var name="post.value.text"}
+        </div>
+      </div>
+    {/foreach}
+  {/withthread}
+{/document}

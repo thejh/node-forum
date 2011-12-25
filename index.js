@@ -72,6 +72,9 @@ function requestHandler(req, res) {
     })
     return
   }
+  if (urlparts[0] === 'thread') {
+    return renderTemplate('thread', {thread: urlparts[1]}, res)
+  }
   res.writeHead(404, 'invalid first path segment or method ☹',
   { 'X-Too-Stupid-To-Type': 'You!'
   , 'Content-Type': 'text/plain; charset=utf-8'
