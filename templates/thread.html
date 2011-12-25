@@ -1,5 +1,6 @@
 {#document title="Thread"}
   {#withthread}
+    <h1>{text name="thread.title" format="plain"}</h1>
     {#foreach list="thread.posts" element="post"}
       <div class="post">
         <div class="postmeta">
@@ -9,6 +10,9 @@
         </div>
         <div class="posttext">
           {text name="post.value.text" format="markdown"}
+        </div>
+        <div class="postfooter">
+        
         </div>
       </div>
     {/foreach}

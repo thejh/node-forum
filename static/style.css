@@ -1,0 +1,19 @@
+/* ==== THREADS ==== */
+.post {
+  width: 100%;
+}
+
+.postmeta {
+  float: left;
+  width: 250px;
+  background-color: black;
+  color: white;
+}
+
+.posttext {
+  float: left;
+}
+
+.postfooter {
+  clear: both;
+}
