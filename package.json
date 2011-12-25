@@ -16,6 +16,7 @@
   , "vacuum": "*"
   , "hat": "*"
   , "password-hash": "*"
+  , "couchapp": "*"
   },
   "devDependencies": {}
 }
