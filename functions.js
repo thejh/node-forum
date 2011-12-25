@@ -1,6 +1,7 @@
 var views = require('./views')
   , vacuum = require('vacuum')
   , marked = require('marked')
+  , forum = require('./')
 
 var PAGE_SIZE = 20
 
@@ -121,6 +122,8 @@ function unsanitizeHTML(text) {
   return text
 }
 
+// -------------------------------------------------------------------------------------------------
+
 exports.text = function TEXT(template, functions, context, chunk, done) {
   var value = vacuum.getFromContext(context, 'name')
   var format = context.format
@@ -164,4 +167,11 @@ exports.withthread = function WITHTHREAD(template, functions, context, chunk, do
     thread.title = data.title
     if (!--needed) goOn()
   })
+}
+
+exports.static = function STATIC(template, functions, context, chunk, done) {
+  var file = context.file
+  if (!file) throw new Error('falsy "file"')
+  chunk('/static/'+file+'/'+forum.ramstatic.unique)
+  done()
 }

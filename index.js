@@ -13,6 +13,7 @@ if (!HAT_TOKEN.test(hat())) throw new Error('weird')
 if (!config.hmacSecret) config.hmacSecret = hat(512)
 
 var ramstaticServer = ramstatic(__dirname+'/static')
+exports.ramstatic = ramstaticServer
 var renderTemplate = vacuum.loadSync(__dirname+'/templates')
 vacuum.copyProps(renderTemplate, require('./functions'))
 var db = exports.db = new Relax(config.database)
