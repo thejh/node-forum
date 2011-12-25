@@ -19,16 +19,16 @@ var db = exports.db = new Relax(config.database)
 
 var httpServer = http.createServer(requestHandler)
 function requestHandler(req, res) {
-  var authedAs = getCookie(req, 'Authed-As')
-  if (authedAs) {
-    req.username = user.checkSignedLogin(authedAs)
-  }
   if (config.debug) console.log((req.username ? req.username : '<anonymous>')+': '+req.method+' '+req.url)
   var urlparts = req.url.split('/').filter(function(str) {
     return str.length > 0
   })
   if (urlparts[0] === 'static' && (req.method === 'GET' || req.method === 'HEAD')) {
     return ramstaticServer.handle(urlparts.slice(1).join('/'), res)
+  }
+  var authedAs = getCookie(req, 'Authed-As')
+  if (authedAs) {
+    req.username = user.checkSignedLogin(authedAs)
   }
   if (urlparts[0] === 'login' && req.method === 'GET') {
     var token = ensureToken(req, res)
