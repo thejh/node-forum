@@ -3,14 +3,12 @@
     {#foreach list="thread.posts" element="post"}
       <div class="post">
         <div class="postmeta">
-          <!-- no need to sanitize, usernames aren't dangerous -->
-          By {var name="post.value.owner"}
+          By {text name="post.value.owner" format="plain"}
           <br>
-          {var name="post.value.creation"}
+          {text name="post.value.creation" format="plain"}
         </div>
         <div class="posttext">
-          <!-- FIXME INJECTION FIXME -->
-          {var name="post.value.text"}
+          {text name="post.value.text" format="markdown"}
         </div>
       </div>
     {/foreach}
