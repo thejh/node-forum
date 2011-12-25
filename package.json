@@ -1,0 +1,21 @@
+{
+  "author": "Jann Horn <jannhorn@googlemail.com>",
+  "name": "forum",
+  "description": "A forum. In node. With a couchdb backend.",
+  "version": "0.1.0",
+  "homepage": "https://github.com/thejh/node-forum",
+  "repository": {
+    "url": "git://github.com/thejh/node-forum.git"
+  },
+  "engines": {
+    "node": "~0.6.6"
+  },
+  "dependencies": {
+    "relax": "*"
+  , "ram-static": "*"
+  , "vacuum": "*"
+  , "hat": "*"
+  , "password-hash": "*"
+  },
+  "devDependencies": {}
+}

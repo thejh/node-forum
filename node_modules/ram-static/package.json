@@ -1,0 +1,19 @@
+{
+  "author": "Jann Horn <jannhorn@googlemail.com>",
+  "name": "ram-static",
+  "description": "Serve a bunch of small static files from RAM (with forever-caching and invocation-specific URLs)",
+  "version": "0.1.0",
+  "homepage": "https://github.com/thejh/node-ram-static",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/thejh/node-ram-static.git"
+  },
+  "engines": {
+    "node": "~0.6.6"
+  },
+  "dependencies": {
+    "hat": "*"
+  , "mime": "*"
+  },
+  "devDependencies": {}
+}
