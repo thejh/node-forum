@@ -121,6 +121,12 @@ function unsanitizeHTML(text) {
   return text
 }
 
+function escapeAttribute(str) {
+  return str
+  .replace(/&/g, '&amp;')
+  .replace(/"/g, '&quot;')
+}
+
 // -------------------------------------------------------------------------------------------------
 
 exports.text = function TEXT(template, functions, context, chunk, done) {
@@ -128,11 +134,15 @@ exports.text = function TEXT(template, functions, context, chunk, done) {
   var format = context.format
   if (format === 'plain') {
     value = sanitizeHTML(value)
+  } else if (format === 'hex') {
+    value = value.replace(/[^0-9a-f]/gi, '')
   } else if (format === 'markdown') {
     value = marked(value)
     value = value.replace(/&/g, '&amp;')
     value = sanitizeHTML(value)
     value = unsanitizeHTML(value)
+  } else if (format === 'attribute') {
+    value = escapeAttribute(value)
   } else {
     throw new Error('unknown sanitization class: '+format)
   }
