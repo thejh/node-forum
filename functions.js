@@ -39,7 +39,7 @@ function unsanitizeHTML(text) {
     var attrsStart = text.slice(i).indexOf(' ')+i
     var attrsEnd = text.slice(i).indexOf('&gt;')+i
     if (attrsEnd < i) break // no more ">" - there can't be any more tags
-    if (attrsStart > attrsEnd) attrsStart = attrsEnd // attributeless
+    if (attrsStart > attrsEnd || attrsStart === i-1) attrsStart = attrsEnd // attributeless
     var nodeName = text.slice(i, attrsStart)
     if (!tags.hasOwnProperty(nodeName)) continue
     var allowedProperties = tags[nodeName]
