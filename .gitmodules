@@ -1,0 +1,3 @@
+[submodule "bundled/ace"]
+	path = bundled/ace
+	url = git://github.com/ajaxorg/ace.git
