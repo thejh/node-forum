@@ -58,6 +58,11 @@ function requestHandler(req, res) {
     return showLoginForm(req, res)
   }
   
+  if (urlparts[0] === 'newthread') {
+    var token = ensureToken(req, res)
+    return renderTemplate('newtopic', {formtoken: token, path: decodeURI(urlparts.slice(1).join('/'))}, res)
+  }
+  
   if (urlparts[0] === 'thread') {
     var threadPage = +urlparts[2]
     if (!threadPage) {
@@ -74,9 +79,10 @@ function requestHandler(req, res) {
     }, res)
   }
   
-  if (urlparts[0] === 'post' && req.method === 'POST' && req.postData.topic && req.postData.text) {
+  if (urlparts[0] === 'post' && req.method === 'POST' && req.postData.text && req.postData.topic) {
     if (!req.username) return showLoginForm(req, res)
     if (req.postData.text === '') return renderTemplate('errorpage', {errorText: formatError(new Error('empty text'))}, res)
+    
     post.addPost(
     { topic: req.postData.topic
     , owner: req.username
@@ -87,6 +93,27 @@ function requestHandler(req, res) {
       { Location: 'http://'+req.headers.host+'/thread/'+req.postData.topic+'/'+page
       })
       res.end('post created, now have a look at it')
+    })
+    return
+  }
+  
+  if (urlparts[0] === 'post' && req.method === 'POST' && req.postData.text && req.postData.path && req.postData.title) {
+    if (!req.username) return showLoginForm(req, res)
+    if (req.postData.text === '') return renderTemplate('errorpage', {errorText: formatError(new Error('empty text'))}, res)
+    if (req.postData.title === '') return renderTemplate('errorpage', {errorText: formatError(new Error('empty title'))}, res)
+    
+    post.createTopic(
+    { topic: req.postData.topic
+    , owner: req.username
+    , text: req.postData.text
+    , path: req.postData.path
+    , title: req.postData.title
+    }, function(err, threadid) {
+      if (err) return renderTemplate('errorpage', {errorText: formatError(err)}, res)
+      res.writeHead(303, 'thread created, now have a look at it',
+      { Location: 'http://'+req.headers.host+'/thread/'+threadid+'/1'
+      })
+      res.end('thread created, now have a look at it')
     })
     return
   }

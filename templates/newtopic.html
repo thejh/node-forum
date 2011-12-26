@@ -1,0 +1,13 @@
+{#document title="Create Thread"}
+  <h1>Create Thread</h1>
+  {#safeform action="/post"}
+    <input type="hidden" name="path" value="{text name="path" format="attribute"}">
+    Topic: <input type="text" name="title">
+    {#editbox editboxname="ace_maketopic"}{/editbox}
+    <input type="hidden" name="text" id="ace_maketopic_text_field" value="">
+    
+    <button type="submit" class="greenbutton">
+      create topic
+    </button>
+  {/safeform}
+{/document}
