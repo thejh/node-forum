@@ -46,7 +46,7 @@ function unsanitizeHTML(text) {
     if (!tags.hasOwnProperty(nodeName)) continue
     var allowedProperties = tags[nodeName]
     var attrsStr = text.slice(attrsStart, attrsEnd)
-    var attrsOK = attrsStr.split(' ').map(function(attrStr) {
+    var attrsOK = attrsStr.split(/ (?=[^"]*(?:(?:"[^"]*){2})*$)/).map(function(attrStr) {
       return attrStr.trim()
     }).filter(function(attrStr) {
       return attrStr !== ''
