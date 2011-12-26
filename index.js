@@ -76,6 +76,7 @@ function requestHandler(req, res) {
   
   if (urlparts[0] === 'post' && req.method === 'POST' && req.postData.topic && req.postData.text) {
     if (!req.username) return showLoginForm(req, res)
+    if (req.postData.text === '') return renderTemplate('errorpage', {errorText: formatError(new Error('empty text'))}, res)
     post.addPost(
     { topic: req.postData.topic
     , owner: req.username
