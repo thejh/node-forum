@@ -31,8 +31,9 @@ function unsanitizeHTML(text) {
   , em: []
   , ul: []
   , li: []
+  , strong: []
   }
-  var tagsWithBody = ['a', 'p', 'em', 'ul', 'li']
+  var tagsWithBody = ['a', 'p', 'em', 'ul', 'li', 'strong']
   tagfinder: for (var i=0; i<text.length; i++) {
     if (text.slice(i, i+4) !== '&lt;') continue
     i+=4
