@@ -28,6 +28,9 @@ function requestHandler(req, res) {
   if (urlparts[0] === 'static' && (req.method === 'GET' || req.method === 'HEAD')) {
     return ramstaticServer.handle(urlparts.slice(1).join('/'), res)
   }
+  if (urlparts[0] === 'favicon.ico' && (req.method === 'GET' || req.method === 'HEAD')) {
+    return ramstaticServer.handle('favicon.ico/a', res)
+  }
   var authedAs = getCookie(req, 'Authed-As')
   if (authedAs) {
     req.username = user.checkSignedLogin(authedAs)
