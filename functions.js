@@ -167,6 +167,7 @@ exports.withthread = function WITHTHREAD(template, functions, context, chunk, do
     thread.posts = data.rows
     thread.length = data.total_rows
     thread.pages = Math.ceil(data.total_rows / PAGE_SIZE)
+    thread.id = context.thread
     childContext.maxpage = thread.pages
     if (!--needed) goOn()
   })
@@ -177,6 +178,17 @@ exports.withthread = function WITHTHREAD(template, functions, context, chunk, do
     thread.title = data.title
     if (!--needed) goOn()
   })
+}
+
+exports.if = function IF(template, functions, context, chunk, done) {
+  var name = vacuum.getFromContext(context, 'name')
+  if (!name) return done()
+  
+  var templateCopy = {}
+  vacuum.copyProps(templateCopy, template)
+  delete templateCopy.type
+  
+  vacuum.renderTemplate(templateCopy, functions, context, chunk, done)
 }
 
 exports.static = function STATIC(template, functions, context, chunk, done) {
@@ -213,4 +225,27 @@ exports.pagenav = function PAGENAV(template, functions, context, chunk, done) {
     url.pathname = path.join('/')
     return formatURL(url)
   }
+}
+
+exports.rePOST = function rePOST(template, functions, context, chunk, done) {
+  var NOREPOST = ['formtoken', 'loginUser', 'loginPassword', 'registerUser', 'registerPassword', 'registerRecoverData']
+
+  if (!context.postData) return done() // no POST, no data
+  var pairs = []
+  Object.keys(context.postData).forEach(function(key) {
+    var values = context.postData[key]
+    if (typeof values === 'string') values = [values]
+    values.forEach(function(value) {
+      if (NOREPOST.indexOf(key) !== -1) return
+      pairs.push({key: key, value: value})
+    })
+  })
+  chunk(pairs.map(function(pair) {
+    return '<input type="hidden" name="'
+         + escapeAttribute(pair.key)
+         + '" value="'
+         + escapeAttribute(pair.value)
+         + '">'
+  }).join('\n'))
+  done()
 }
