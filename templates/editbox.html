@@ -1,0 +1,25 @@
+<div id="editorContainer">
+  <div id="{var name="editboxname"}" class="aceeditor">{childblock of="editbox"}</div>
+</div>
+<script>
+  window.addEventListener('load', function() {
+    var editor = ace.edit('{var name="editboxname"}')
+    window.{var name="editboxname"} = editor
+    // editor.setTheme("ace/theme/twilight")
+    var MarkdownMode = require("ace/mode/markdown").Mode
+    editor.getSession().setMode(new MarkdownMode)
+    
+    // our editbox is in a <form>, listen to "submit" of that form and copy in our data before sending
+    var hiddenField = document.getElementById('{var name="editboxname"}_text_field')
+    function updateHiddenField() {
+      hiddenField.value = editor.env.document.getValue()
+    }
+    
+    var form = hiddenField
+    while (form.nodeName !== 'FORM') {
+      if (!form) throw new Error('ace editor without <form> parent for hidden value container')
+      form = form.parentNode
+    }
+    form.addEventListener('submit', updateHiddenField, false)
+  }, false)
+</script>

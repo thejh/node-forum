@@ -5,8 +5,19 @@
       {var name="title"} - nodeforum
     </title>
     <link rel="stylesheet" type="text/css" href="{static file="style.css"}">
+    <!-- TODO bundle scripts -->
+    <script defer src="{static file="jquery-1.7.1.min.js"}" type="text/javascript" charset="utf-8"></script>
+    <script defer src="{static file="ace/src/ace.js"}" type="text/javascript" charset="utf-8"></script>
+    <!-- <script src="{static file="ace/src/theme-twilight.js"}" type="text/javascript" charset="utf-8"></script> -->
+    <script defer src="{static file="ace/src/mode-markdown.js"}" type="text/javascript" charset="utf-8"></script>
   </head>
   <body>
+    {#if name="errorText"}
+      <div class="errorBox">
+        The following error occured:
+        <pre class="errorText">{text name="errorText" format="plain"}</pre>
+      </div>
+    {/if}
     {childblock of="document"}
   </body>
 </html>

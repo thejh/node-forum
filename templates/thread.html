@@ -17,5 +17,15 @@
       </div>
     {/foreach}
     {pagenav}
+    <h2>Reply</h2>
+    {#safeform action="/post"}
+      <input type="hidden" name="topic" value="{text name="thread.id" format="hex"}">
+      {#editbox editboxname="ace_reply"}{/editbox}
+      <input type="hidden" name="text" id="ace_reply_text_field" value="">
+      
+      <button type="submit" class="greenbutton">
+        send
+      </button>
+    {/safeform}
   {/withthread}
 {/document}

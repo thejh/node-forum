@@ -1,12 +1,36 @@
 {#document title="Login"}
-  Please authenticate:
-  {#safeform action="/login"}
-    User: <input type="text" name="user">
-    <br>
-    Password: <input type="password" name="password">
-    <br>
-    <button type="submit">
-      Login
-    </button>
-  {/safeform}
+  <div id="loginBox">
+    <h2>Login</h2>
+    Please authenticate:
+    {#safeform action=""}
+      {rePOST}
+      User: <input type="text" name="loginUser">
+      <br>
+      Password: <input type="password" name="loginPassword">
+      <br>
+      <button type="submit">
+        Login
+      </button>
+    {/safeform}
+  </div>
+  <div id="registerBox">
+    <h2>Register</h2>
+    Please enter the username you want to have and the password:
+    {#safeform action=""}
+      {rePOST}
+      User: <input type="text" name="registerUser">
+      <br>
+      Password: <input type="password" name="registerPassword">
+      <br>
+      In case you lose your password, we'll be happy to manually reset it, but we won't be able
+      to unless you give us some way to verify that you're really who you claim to be. Enter something
+      like "email foo@bar.com, github foobar, freenode foobar" here.
+      <br>
+      <input type="text" name="registerRecoverData">
+      <br>
+      <button type="submit">
+        Register
+      </button>
+    {/safeform}
+  </div>
 {/document}

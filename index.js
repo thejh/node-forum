@@ -7,6 +7,7 @@ var config = require('./config')
   , querystring = require('querystring')
   , user = require('./user')
   , parseURL = require('url').parse
+  , post = require('./post')
 
 var HAT_TOKEN = /^[a-f0-9]{32}$/
 if (!HAT_TOKEN.test(hat())) throw new Error('weird')
@@ -21,70 +22,74 @@ var db = exports.db = new Relax(config.database)
 
 var httpServer = http.createServer(requestHandler)
 function requestHandler(req, res) {
-  if (config.debug) console.log((req.username ? req.username : '<anonymous>')+': '+req.method+' '+req.url)
   var urlparts = parseURL(req.url).pathname.split('/').filter(function(str) {
     return str.length > 0
   })
+  
+  // static files
   if (urlparts[0] === 'static' && (req.method === 'GET' || req.method === 'HEAD')) {
     return ramstaticServer.handle(urlparts.slice(1).join('/'), res)
   }
   if (urlparts[0] === 'favicon.ico' && (req.method === 'GET' || req.method === 'HEAD')) {
     return ramstaticServer.handle('favicon.ico/a', res)
   }
-  var authedAs = getCookie(req, 'Authed-As')
-  if (authedAs) {
-    req.username = user.checkSignedLogin(authedAs)
+  
+  // collect POST data and verify formtoken
+  if (req.method === 'POST' && !req.postData) return bufferPost(req, res)
+  
+  if (!req.username) {
+    var authedAs = getCookie(req, 'Authed-As')
+    if (authedAs) {
+      req.username = user.checkSignedLogin(authedAs)
+    }
   }
-  if (urlparts[0] === 'login' && req.method === 'GET') {
-    var token = ensureToken(req, res)
-    return renderTemplate('login', {formtoken: token}, res)
+  
+  if (config.debug) console.log((req.username ? req.username : '<anonymous>')+': '+req.method+' '+req.url)
+  
+  // intercept POST with loginUser or registerUser
+  if (maybeInterceptLoginOrRegister(req, res)) return
+  
+  if (urlparts[0] === 'login') {
+    if (req.username) {
+      res.writeHead(303, "You're already logged in, what are you doing here?", {'Location': 'http://'+req.headers.host+'/'})
+      res.end("You're already logged in, what are you doing here?")
+      return
+    }
+    return showLoginForm(req, res)
   }
-  if (urlparts[0] === 'login' && req.method === 'POST') {
-    if (!req.postData) return bufferPost(req, res)
-    user.authUser(req.postData.user, req.postData.password, function(err, result) {
-      if (err) {
-        res.writeHead(400, JSON.stringify(err.message || err || "error"),
-        { 'Content-Type': 'text/plain'
-        })
-        res.end(err.stack || err.message || JSON.stringify(err || "error"))
-        return
-      }
-      setCookie(res, 'Authed-As', result.proof)
-      res.writeHead(200, 'login ok')
-      res.end('yay, you were logged in!')
-    })
-    return
-  }
-  if (urlparts[0] === 'register' && req.method === 'GET') {
-    var token = ensureToken(req, res)
-    return renderTemplate('register', {formtoken: token}, res)
-  }
-  if (urlparts[0] === 'register' && req.method === 'POST') {
-    if (!req.postData) return bufferPost(req, res)
-    user.createUser(req.postData.user, req.postData.password,
-    { recoverData: req.postData.recoverData
-    }, function(err, proof) {
-      if (err) {
-        res.writeHead(400, JSON.stringify(err.message || err || "error"),
-        { 'Content-Type': 'text/plain'
-        })
-        res.end(err.stack || err.message || JSON.stringify(err || "error"))
-        return
-      }
-      setCookie(res, 'Authed-As', proof)
-      res.writeHead(200, 'register ok')
-      res.end('yay, you have an account!')
-    })
-    return
-  }
+  
   if (urlparts[0] === 'thread') {
     var threadPage = +urlparts[2]
     if (!threadPage) {
       res.writeHead(400, 'no or non-numeric page', { 'Content-Type': 'text/plain' })
       return res.end('missing or non-numeric page')
     }
-    return renderTemplate('thread', {thread: urlparts[1], page: threadPage, request: req, pageURLPos: 3}, res)
+    var token = ensureToken(req, res)
+    return renderTemplate('thread',
+    { thread: urlparts[1]
+    , page: threadPage
+    , request: req
+    , pageURLPos: 3
+    , formtoken: token
+    }, res)
   }
+  
+  if (urlparts[0] === 'post' && req.method === 'POST' && req.postData.topic && req.postData.text) {
+    if (!req.username) return showLoginForm(req, res)
+    post.addPost(
+    { topic: req.postData.topic
+    , owner: req.username
+    , text: req.postData.text
+    }, function(err, page) {
+      if (err) return renderTemplate('errorpage', {errorText: formatError(err)}, res)
+      res.writeHead(303, 'post created, now have a look at it',
+      { Location: 'http://'+req.headers.host+'/thread/'+req.postData.topic+'/'+page
+      })
+      res.end('post created, now have a look at it')
+    })
+    return
+  }
+  
   res.writeHead(404, 'invalid first path segment or method ☹',
   { 'X-Too-Stupid-To-Type': 'You!'
   , 'Content-Type': 'text/plain; charset=utf-8'
@@ -93,7 +98,58 @@ function requestHandler(req, res) {
 }
 httpServer.listen(config.server.port)
 
-function bufferPost(req, res, checkToken) {
+function showLoginForm(req, res, err) {
+  var token = ensureToken(req, res)
+  renderTemplate('login', {formtoken: token, postData: req.postData, url: req.url, errorText: formatError(err)}, res)
+}
+
+function formatError(err) {
+  if (!err) return
+  var errorText = err.stack || err.message || err
+  if (typeof errorText === 'object') {
+    try {
+      errorText = JSON.stringify(errorText)
+    } catch (jsonerr) {
+      errorText = String(errorText)
+    }
+  }
+  return errorText || "<can't format error correctly>"
+}
+
+function maybeInterceptLoginOrRegister(req, res) {
+  if (!req.postData) return false
+  
+  var method = null
+  if (req.postData.loginUser && req.postData.loginPassword) method = 'authUser'
+  if (req.postData.registerUser && req.postData.registerPassword && req.postData.registerRecoverData) method = 'createUser'
+  if (!method) return false
+  console.log('  intercepting with '+method)
+  var username = req.postData.loginUser || req.postData.registerUser
+  var password = req.postData.loginPassword || req.postData.registerPassword
+  
+  var doc = {}
+  if (method === 'createUser') doc.recoverData = req.postData.registerRecoverData
+  user[method](username, password, doc, function(err, result) {
+    if (err) {
+      showLoginForm(req, res, err)
+      return
+    }
+    // remember login...
+    setCookie(res, 'Authed-As', result.proof)
+    
+    // ...and go on handling this request
+    req.username = username
+    delete req.postData.loginUser
+    delete req.postData.loginPassword
+    delete req.postData.registerUser
+    delete req.postData.registerPassword
+    delete req.postData.registerRecoverData
+    requestHandler(req, res)
+  })
+  return true // block until the user has authed
+}
+
+function bufferPost(req, res, checkToken, handler) {
   req.setEncoding('utf8')
   req.resume()
   var data = ''
@@ -107,6 +163,12 @@ function bufferPost(req, res, checkToken) {
   })
   req.on('end', function() {
     req.postData = querystring.parse(data)
+    
+    // I don't want to handle this kind of crazyness in my code.
+    Object.keys(req.postData).forEach(function(key) {
+      if (typeof req.postData[key] !== 'string') delete req.postData[key]
+    })
+    
     if (checkToken !== 'NOVERIFY') {
       var postToken = req.postData.formtoken
         , cookieToken = getToken(req)
@@ -119,7 +181,7 @@ function bufferPost(req, res, checkToken) {
         return
       }
     }
-    requestHandler(req, res)
+    (handler || requestHandler)(req, res)
   })
 }
 
@@ -144,7 +206,7 @@ function getCookie(req, name) {
 
 function setCookie(res, name, value) {
   var cookieHeaders = res.getHeader('Set-Cookie') || []
-  cookieHeaders.push(name+'='+encodeURIComponent(value))
+  cookieHeaders.push(name+'='+encodeURIComponent(value)+'; Path=/; HttpOnly')
   res.setHeader('Set-Cookie', cookieHeaders)
 }
 
@@ -154,4 +216,14 @@ function ensureToken(req, res) {
   var token = hat()
   setCookie(res, 'FormToken', token)
   return token
+}
+
+function clone(obj) {
+  var copy = {}
+  for (var key in obj) {
+    if (Object.prototype.hasOwnPrototype.call(obj, key)) {
+      copy[key] = obj[key]
+    }
+  }
+  return copy
 }

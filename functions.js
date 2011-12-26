@@ -5,7 +5,9 @@ var views = require('./views')
   , parseURL = require('url').parse
   , formatURL = require('url').format
 
-var PAGE_SIZE = 20
+forum.escapeText = escapeText // hmmm... kind of ugly...
+
+var PAGE_SIZE = forum.PAGE_SIZE = 20
 
 function renderContent(template, functions, context, chunk, done) {
   var templateCopy = {}
@@ -127,11 +129,7 @@ function escapeAttribute(str) {
   .replace(/"/g, '&quot;')
 }
 
-// -------------------------------------------------------------------------------------------------
-
-exports.text = function TEXT(template, functions, context, chunk, done) {
-  var value = vacuum.getFromContext(context, 'name')
-  var format = context.format
+function escapeText(value, format) {
   if (format === 'plain') {
     value = sanitizeHTML(value)
   } else if (format === 'hex') {
@@ -146,6 +144,15 @@ exports.text = function TEXT(template, functions, context, chunk, done) {
   } else {
     throw new Error('unknown sanitization class: '+format)
   }
+  return value
+}
+
+// -------------------------------------------------------------------------------------------------
+
+exports.text = function TEXT(template, functions, context, chunk, done) {
+  var value = vacuum.getFromContext(context, 'name')
+  var format = context.format
+  value = escapeText(value, format)
   chunk(value)
   done()
 }
@@ -169,6 +176,11 @@ exports.withthread = function WITHTHREAD(template, functions, context, chunk, do
     thread.pages = Math.ceil(data.total_rows / PAGE_SIZE)
     thread.id = context.thread
     childContext.maxpage = thread.pages
+    
+    thread.posts.forEach(function(post) {
+      post.value.creation = new Date(post.value.creation).toGMTString()
+      if (post.value.modification) post.value.modification = new Date(post.value.modification).toGMTString()
+    })
     if (!--needed) goOn()
   })
   
@@ -181,7 +193,7 @@ exports.withthread = function WITHTHREAD(template, functions, context, chunk, do
 }
 
 exports.if = function IF(template, functions, context, chunk, done) {
-  var name = vacuum.getFromContext(context, 'name')
+  var name = vacuum.getFromContext(context, 'name', true)
   if (!name) return done()
   
   var templateCopy = {}

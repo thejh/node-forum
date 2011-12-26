@@ -18,14 +18,15 @@ function createUser(name, password, doc, cb) {
   forum.db.store(docname, doc, function(err) {
     if (err) return cb(err)
     var loginProof = sign('validloginas:'+name)
-    cb(null, loginProof)
+    cb(null, {proof: loginProof})
   })
 }
 
-function authUser(name, password, cb) {
+function authUser(name, password, _, cb) {
   if (!USERNAME.test(name)) return cb(new Error('invalid username (allowed: '+USERNAME+')'))
   var docname = 'user:'+name
   forum.db.get(docname, function(err, doc) {
+    if (err && err.error === 'not_found') return cb(new Error("That username doesn't exist. Maybe you want to register a new account?"))
     if (err) return cb(err)
     if (!pwhash.verify(password, doc.password)) return cb(new Error('wrong password'))
     var loginProof = sign('validloginas:'+name)

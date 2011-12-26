@@ -17,3 +17,53 @@
 .postfooter {
   clear: both;
 }
+
+#editorContainer {
+  position: relative;
+  left: 0px;
+  top: 0px;
+  height: 300px;
+  width: 100%;
+}
+
+.aceeditor {
+  position: relative;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+}
+
+button {
+  font-weight: bolder;
+  font-size: 16px;
+  border-radius: 15px;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.greenbutton {
+    background-color: green;
+    color: white;
+}
+
+#loginBox {
+  float: left;
+  width: 50%;
+}
+
+#registerBox {
+  float: left;
+  width: 50%;
+}
+
+.errorBox {
+  border: 2px dotted red;
+  background-color: lightyellow;
+  padding: 4px;
+  font-weight: bold;
+}
+
+.errorText {
+  font-weight: normal;
+}
