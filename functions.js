@@ -33,7 +33,6 @@ function unsanitizeHTML(text) {
   var tagsWithBody = ['a', 'p', 'em', 'ul', 'li']
   tagfinder: for (var i=0; i<text.length; i++) {
     if (text.slice(i, i+4) !== '&lt;') continue
-    console.log('ex-node found')
     i+=4
     var attrsStart = text.slice(i).indexOf(' ')+i
     var attrsEnd = text.slice(i).indexOf('&gt;')+i
@@ -41,7 +40,6 @@ function unsanitizeHTML(text) {
     if (attrsStart > attrsEnd) attrsStart = attrsEnd // attributeless
     var nodeName = text.slice(i, attrsStart)
     if (!tags.hasOwnProperty(nodeName)) continue
-    console.log('nodename ok')
     var allowedProperties = tags[nodeName]
     var attrsStr = text.slice(attrsStart, attrsEnd)
     var attrsOK = attrsStr.split(' ').map(function(attrStr) {
@@ -49,7 +47,6 @@ function unsanitizeHTML(text) {
     }).filter(function(attrStr) {
       return attrStr !== ''
     }).every(function(attrStr) {
-      console.log('checking attribute '+JSON.stringify(attrStr)+'...')
       attrStr = attrStr.split('=')
       var name = attrStr[0]
       if (allowedProperties.indexOf(name) === -1) return false
@@ -66,11 +63,9 @@ function unsanitizeHTML(text) {
         // "javascript:" URLs, yay!
         if (value.slice(0, 7) !== 'http://' && value.slice(0, 8) !== 'https://') return false
       }
-      console.log('attribute ok')
       return true
     })
     if (!attrsOK) continue
-    console.log('attributes ok')
     
     if (tagsWithBody.indexOf(nodeName) !== -1) {
       // ugh.
