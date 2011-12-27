@@ -190,6 +190,7 @@ exports.withthread = function WITHTHREAD(template, functions, context, chunk, do
     if (err) return done(err)
     thread.owner = data.owner
     thread.title = data.title
+    thread.path = data.path
     if (!--needed) goOn()
   })
 }
@@ -287,4 +288,32 @@ exports.rePOST = function rePOST(template, functions, context, chunk, done) {
          + '">'
   }).join('\n'))
   done()
+}
+
+exports.uplinks = function UPLINKS(template, functions, context, chunk, done) {
+  var path = vacuum.getFromContext(context, 'pathvar').split('/')
+  var type = context.type
+  var output = ''
+  if (type === 'thread') {
+    prepend(path, false)
+    output = '/'+output
+  } else if (type === 'forum') {
+  } else throw new Error('unknown type')
+  path.pop()
+  while (path.length > 0) {
+    prepend(path, true)
+    output = '/'+output
+    path.pop()
+  }
+  output = '<a href="/superforum">root</a>'
+         + output
+  chunk(output)
+  done()
+  
+  function prepend(path, isSuperforum) {
+    output = '<a href="/'+(isSuperforum?'superforum':'forum')+'/'+escapeAttribute(path.join('/'))+(isSuperforum?'">':'/1">')
+           + escapeText(path[path.length-1], 'plain')
+           + '</a>'
+           + output
+  }
 }

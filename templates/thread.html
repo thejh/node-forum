@@ -1,6 +1,7 @@
 {#document title="Thread"}
   {#withthread}
     <h1>{text name="thread.title" format="plain"}</h1>
+    {uplinks pathvar="thread.path" type="thread"}
     {#foreach list="thread.posts" element="post"}
       <div class="post">
         <div class="postmeta">
