@@ -79,6 +79,23 @@ function requestHandler(req, res) {
     }, res)
   }
   
+  if (urlparts[0] === 'forum' && urlparts.length >= 2) {
+    var forumPage = +urlparts[urlparts.length-1]
+    var forumPath = decodeURI(urlparts.slice(1, -1).join('/'))
+    if (!forumPage) {
+      res.writeHead(400, 'no or non-numeric page', { 'Content-Type': 'text/plain' })
+      return res.end('missing or non-numeric page')
+    }
+    var token = ensureToken(req, res)
+    return renderTemplate('forum',
+    { forum: forumPath
+    , page: forumPage
+    , request: req
+    , pageURLPos: 3
+    , formtoken: token
+    }, res)
+  }
+  
   if (urlparts[0] === 'post' && req.method === 'POST' && req.postData.text && req.postData.topic) {
     if (!req.username) return showLoginForm(req, res)
     if (req.postData.text === '') return renderTemplate('errorpage', {errorText: formatError(new Error('empty text'))}, res)

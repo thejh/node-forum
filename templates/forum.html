@@ -1,0 +1,14 @@
+{#document title="Forum Overview"}
+  {#withforum}
+    <h1>{text name="forum.title" format="plain"}</h1>
+    {#foreach list="forum.threads" element="thread"}
+      <div class="threadmeta" onclick="document.location = '/thread/{text name="thread.id" format="hex"}/1'">
+        {text name="thread.value.title" format="plain"}
+        <br>
+        by {text name="thread.value.owner" format="plain"},
+        last post {text name="thread.value.lastpost" format="plain"}
+      </div>
+    {/foreach}
+    {pagenav}
+  {/withforum}
+{/document}

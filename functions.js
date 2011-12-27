@@ -194,6 +194,31 @@ exports.withthread = function WITHTHREAD(template, functions, context, chunk, do
   })
 }
 
+exports.withforum = function WITHTHREAD(template, functions, context, chunk, done) {
+  var childContext = {}
+  vacuum.copyProps(childContext, context)
+  var forum = {}
+  childContext.forum = forum
+  
+  views.getForum(context.forum, PAGE_SIZE, PAGE_SIZE * ((context.page-1) || 0), function(err, data) {
+    if (err) return done(err)
+    
+    forum.threads = data.rows
+    forum.length = data.total_rows
+    forum.title = data.meta.title
+    forum.pages = Math.ceil(data.total_rows / PAGE_SIZE)
+    forum.id = context.forum
+    childContext.maxpage = forum.pages
+    
+    forum.threads.forEach(function(thread) {
+      thread.value.lastpost = new Date(thread.value.lastpost).toGMTString()
+      thread.id = thread.id.split(':')[1]
+    })
+    
+    renderContent(template, functions, childContext, chunk, done)
+  })
+}
+
 exports.if = function IF(template, functions, context, chunk, done) {
   var name = vacuum.getFromContext(context, 'name', true)
   if (!name) return done()
