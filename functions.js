@@ -34,6 +34,7 @@ function unsanitizeHTML(text) {
   , strong: []
   , code: []
   , pre: []
+  , img: ['src', 'alt']
   }
   var tagsWithBody = ['a', 'p', 'em', 'ul', 'li', 'strong', 'code', 'pre']
   tagfinder: for (var i=0; i<text.length; i++) {
