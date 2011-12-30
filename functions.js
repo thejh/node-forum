@@ -269,7 +269,7 @@ exports.pagenav = function PAGENAV(template, functions, context, chunk, done) {
   var maxpage = +context.maxpage
   var urlpos = context.pageURLPos
   if (!page) throw new Error('invalid page')
-  if (!maxpage) throw new Error('invalid maxpage')
+  if (!maxpage && maxpage !== 0) throw new Error('invalid maxpage: '+maxpage)
   if (!urlpos) throw new Error('invalid urlpos')
   var leftURL = addToURLPart(-1)
   var rightURL = addToURLPart(1)
