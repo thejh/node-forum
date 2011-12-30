@@ -18,6 +18,36 @@ function renderContent(template, functions, context, chunk, done) {
   vacuum.renderTemplate(template, functions, context, chunk, done)
 }
 
+function insertSmileys(text) {
+  var SMILEYS =
+  { ':)': 'Smiling'
+  , ':D': 'Grinning'
+  , ':(': 'Unhappy'
+  , ':/': 'Uncertain'
+  }
+  Object.keys(SMILEYS).forEach(function(needle) {
+    var replacement = '<img src="/static/smileys/'+SMILEYS[needle]+'.png/'+forum.ramstatic.unique+'">'
+    var i = 0
+    while (true) {
+      var nextText = text.slice(i)
+      var nextTagOpen = nextText.indexOf('<')+i
+      var nextSmiley = nextText.indexOf(needle)+i
+      if (nextSmiley === i-1) break
+      if (nextTagOpen !== i-1 && nextTagOpen < nextSmiley) {
+        var nextTagEnd = nextText.indexOf('>')+i
+        if (nextTagEnd !== i-1) {
+          i = nextTagEnd + 1
+          continue
+        }
+      }
+      nextText = nextText.replace(needle, replacement)
+      text = text.slice(0, i) + nextText
+      i = nextSmiley+1
+    }
+  })
+  return text
+}
+
 function sanitizeHTML(text) {
   text = text.replace(/</g, '&lt;')
   text = text.replace(/>/g, '&gt;')
@@ -140,6 +170,7 @@ function escapeText(value, format) {
     value = value.replace(/[^0-9a-f]/gi, '')
   } else if (format === 'markdown') {
     value = marked(value)
+    value = insertSmileys(value)
     value = value.replace(/&/g, '&amp;')
     value = sanitizeHTML(value)
     value = unsanitizeHTML(value)
