@@ -1,4 +1,4 @@
-var config = require('./config')
+var config = exports.config = JSON.parse(require('fs').readFileSync(__dirname+'/config.json', 'utf8'))
   , Relax = require('relax')
   , vacuum = require('vacuum')
   , ramstatic = require('ram-static')

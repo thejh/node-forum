@@ -5,7 +5,7 @@ exports.checkSignedLogin = checkSignedLogin
 var forum = require('./')
   , pwhash = require('password-hash')
   , crypto = require('crypto')
-  , config = require('./config')
+  , config = forum.config
 
 var USERNAME = /^\w+$/
 
