@@ -2,6 +2,8 @@
   {#withforum}
     <h1>{text name="forum.title" format="plain"}</h1>
     {uplinks pathvar="forum.id" type="forum"}
+    <br>
+    <a href="/newthread/{text name="forum.id" format="attribute"}">new post</a>
     {#foreach list="forum.threads" element="thread"}
       <a href="/thread/{text name="thread.id" format="hex"}/1">
         <div class="threadmeta">
