@@ -10,6 +10,10 @@ var ddoc =
 
 module.exports = ddoc
 
+ddoc.validate_doc_update = function(newdoc, olddoc, userCtx, secobj) {
+  if (userCtx.name !== 'forum' && userCtx.roles.indexOf('_admin') === -1) throw {forbidden: 'you must be logged in as "forum" or an admin'}
+}
+
 ddoc.views.threadPosts =
 { map: function(doc) {
     if (doc._id.slice(0, 5) === 'post:') {
