@@ -195,7 +195,7 @@ exports.withthread = function WITHTHREAD(template, functions, context, chunk, do
   })
 }
 
-exports.withforum = function WITHTHREAD(template, functions, context, chunk, done) {
+exports.withforum = function WITHFORUM(template, functions, context, chunk, done) {
   var childContext = {}
   vacuum.copyProps(childContext, context)
   var forum = {}
