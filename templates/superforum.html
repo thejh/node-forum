@@ -1,0 +1,13 @@
+{#document title="Forum Overview"}
+  {#withsuperforum}
+    <h1>{text name="superforum.title" format="plain"}</h1>
+    {uplinks pathvar="superforum.id" type="superforum"}
+    {#foreach list="superforum.rows" element="subforum"}
+      <a href="{text name="subforum.link" format="attribute"}">
+        <div class="forummeta">
+          {text name="subforum.title" format="plain"}
+        </div>
+      </a>
+    {/foreach}
+  {/withsuperforum}
+{/document}

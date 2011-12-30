@@ -96,6 +96,16 @@ function requestHandler(req, res) {
     }, res)
   }
   
+  if (urlparts[0] === 'superforum') {
+    var forumPath = decodeURI(urlparts.slice(1).join('/'))
+    // var token = ensureToken(req, res)
+    return renderTemplate('superforum',
+    { superforum: forumPath
+    , request: req
+    //, formtoken: token
+    }, res)
+  }
+  
   if (urlparts[0] === 'post' && req.method === 'POST' && req.postData.text && req.postData.topic) {
     if (!req.username) return showLoginForm(req, res)
     if (req.postData.text === '') return renderTemplate('errorpage', {errorText: formatError(new Error('empty text'))}, res)

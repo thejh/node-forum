@@ -37,11 +37,17 @@ ddoc.views.forumTopics =
 ddoc.views.superforumIndex =
 { map: function(doc) {
     if (doc._id.slice(0, 6) === 'forum:' || doc._id.slice(0, 11) === 'superforum:') {
-      var forumPath = doc._id.slice(doc._id.indexOf(':')+1)
-      if (forumPath.indexOf('/') !== -1) {
-        forumPath = forumPath.slice(0, forumPath.lastIndexOf('/'))
-        emit(forumPath, doc)
+      var fullForumPath = doc._id.slice(doc._id.indexOf(':')+1)
+      if (fullForumPath === '') return
+      var parentpath, subkey
+      if (fullForumPath.indexOf('/') !== -1) {
+        parentpath = fullForumPath.slice(0, fullForumPath.lastIndexOf('/'))
+        subkey = fullForumPath.slice(fullForumPath.lastIndexOf('/')+1)
+      } else {
+        parentpath = ''
+        subkey = fullForumPath
       }
+      emit(parentpath, {title: doc.title, path: fullForumPath, subkey: subkey, type: doc._id.split(':')[0]})
     }
   }
 }

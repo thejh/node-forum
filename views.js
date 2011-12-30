@@ -1,6 +1,7 @@
 exports.getThreadPosts = getThreadPosts
 exports.getThread = getThread
 exports.getForum = getForum
+exports.getSuperforum = getSuperforum
 
 var forum = require('./')
 
@@ -22,6 +23,27 @@ function getForum(path, limit, skip, cb) {
             +'&endkey='+jsonParam([path, []])
             +'&limit='+limit
             +'&skip='+skip
+  
+  forum.db.request('GET', {path: url}, function(err, data) {
+    if (err) return cb(err), cb = noop
+    result.total_rows = data.total_rows
+    result.offset = data.offset
+    result.rows = data.rows
+    if (--pending === 0) cb(null, result)
+  })
+}
+
+function getSuperforum(path, cb) {
+  var pending = 2
+  var result = {}
+  forum.db.get('superforum:'+path, function(err, doc) {
+    if (err) return cb(err), cb = noop
+    result.meta = doc
+    if (--pending === 0) cb(null, result)
+  })
+  
+  var url = '_design/app/_view/superforumIndex'
+            +'?key='+jsonParam(path)
   
   forum.db.request('GET', {path: url}, function(err, data) {
     if (err) return cb(err), cb = noop

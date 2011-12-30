@@ -220,6 +220,31 @@ exports.withforum = function WITHFORUM(template, functions, context, chunk, done
   })
 }
 
+exports.withsuperforum = function WITHSUPERFORUM(template, functions, context, chunk, done) {
+  var childContext = {}
+  vacuum.copyProps(childContext, context)
+  var forum = {}
+  childContext.superforum = forum
+  
+  views.getSuperforum(context.superforum, function(err, data) {
+    if (err) return done(err)
+    
+    forum.rows = data.rows.map(function(subforum) {
+      return (
+      { title: subforum.value.title
+      , link: '/' + subforum.value.type + '/' + encodeURI(subforum.value.path) + ((subforum.value.type === 'forum') ? '/1' : '')
+      })
+    })
+    forum.length = data.total_rows
+    forum.title = data.meta.title
+    forum.pages = Math.ceil(data.total_rows / PAGE_SIZE)
+    forum.id = context.superforum
+    childContext.maxpage = forum.pages
+    
+    renderContent(template, functions, childContext, chunk, done)
+  })
+}
+
 exports.if = function IF(template, functions, context, chunk, done) {
   var name = vacuum.getFromContext(context, 'name', true)
   if (!name) return done()
@@ -297,7 +322,7 @@ exports.uplinks = function UPLINKS(template, functions, context, chunk, done) {
   if (type === 'thread') {
     prepend(path, false)
     output = '/'+output
-  } else if (type === 'forum') {
+  } else if (type === 'forum' || type === 'superforum') {
   } else throw new Error('unknown type')
   path.pop()
   while (path.length > 0) {
