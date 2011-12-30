@@ -26,6 +26,8 @@ function requestHandler(req, res) {
     return str.length > 0
   })
   
+  if (urlparts.length === 0) urlparts = ['superforum']
+  
   // static files
   if (urlparts[0] === 'static' && (req.method === 'GET' || req.method === 'HEAD')) {
     return ramstaticServer.handle(urlparts.slice(1).join('/'), res)
