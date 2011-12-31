@@ -147,6 +147,14 @@ function requestHandler(req, res) {
     return
   }
   
+  if (urlparts[0] === 'debug') {
+    res.writeHead(200, {'Content-Type': 'text/plain'})
+    res.end('network interfaces: '+JSON.stringify(require('os').networkInterfaces())+'\n'+
+            'local address: '+JSON.stringify(req.connection.address())+'\n'+
+            'remote IP: '+req.connection.remoteAddress)
+    return
+  }
+  
   res.writeHead(404, 'invalid first path segment or method ☹',
   { 'X-Too-Stupid-To-Type': 'You!'
   , 'Content-Type': 'text/plain; charset=utf-8'
